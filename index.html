@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>我叫王多鱼 - 300亿挑战</title>
+    <style>
+        body { 
+            font-family: 'Arial', sans-serif; 
+            background-color: #f4f4f4; 
+            text-align: center; 
+            padding: 20px; 
+            margin: 0; 
+        }
+
+        /* 顶部金额区域 */
+        #budget-container { 
+            background: #333; 
+            color: #fff; 
+            padding: 20px; 
+            border-radius: 10px; 
+            margin-bottom: 20px; 
+            position: sticky; 
+            top: 0; 
+            z-index: 100; 
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2); 
+        }
+        #budget { font-size: 2.5em; color: #4caf50; font-weight: bold; }
+
+        /* 图片区域 */
+        .image-banner {
+            width: 100%;
+            max-width: 1000px; 
+            height: 300px;     
+            margin: 0 auto 30px auto; 
+            border-radius: 10px; 
+            overflow: hidden;    
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1); 
+            background-color: #ddd; 
+        }
+        .image-banner img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover; 
+        }
+
+        /* 商品列表 */
+        .items-grid { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); 
+            gap: 20px; 
+            max-width: 1000px; 
+            margin: 0 auto; 
+        }
+        
+        /* 商品卡片 */
+        .item-card { 
+            background: #fff; 
+            padding: 20px; 
+            border-radius: 8px; 
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1); 
+            transition: transform 0.2s; 
+            display: flex;
+            flex-direction: column;
+            align-items: center; 
+        }
+        .item-card:hover { transform: translateY(-5px); }
+        .item-name { font-size: 1.2em; margin-bottom: 5px; font-weight: bold; }
+        .item-price { color: #555; margin-bottom: 5px; }
+        .item-owned { color: #888; font-size: 0.9em; margin-bottom: 15px; font-weight: bold; }
+
+        /* 按钮样式 */
+        .control-group { display: flex; align-items: center; width: 100%; justify-content: space-between; gap: 10px; }
+        .btn { border: none; cursor: pointer; font-size: 1em; font-weight: bold; border-radius: 5px; transition: all 0.2s; color: white; }
+        .btn-sell { flex: 1.5; padding: 12px 0; background-color: #dc3545; }
+        .btn-sell:hover { background-color: #a71d2a; }
+        .btn-buy { flex: 1.5; padding: 12px 0; background-color: #007bff; }
+        .btn-buy:hover { background-color: #0056b3; }
+        
+        .batch-control { display: flex; align-items: center; background: #f9f9f9; border-radius: 5px; border: 1px solid #eee; }
+        .btn-symbol { width: 30px; height: 35px; background-color: #6c757d; color: white; border-radius: 0; font-size: 1.2em; margin: 0; }
+        .btn-symbol:first-child { border-radius: 5px 0 0 5px; }
+        .btn-symbol:last-child { border-radius: 0 5px 5px 0; }
+        .btn-symbol:hover { background-color: #5a6268; }
+        .batch-display { width: 40px; text-align: center; font-weight: bold; color: #333; font-size: 1.1em; }
+
+        /* 底部明细看板样式 */
+        .summary-board {
+            max-width: 800px;
+            margin: 50px auto 20px auto;
+            background: #fff;
+            border-radius: 10px;
+            box-shadow: 0 -4px 20px rgba(0,0,0,0.05);
+            padding: 20px;
+            text-align: left;
+        }
+        .summary-title {
+            font-size: 1.5em;
+            border-bottom: 2px solid #f0f0f0;
+            padding-bottom: 10px;
+            margin-bottom: 15px;
+            color: #333;
+            display: flex;
+            justify-content: space-between;
+        }
+        .summary-list { list-style: none; padding: 0; margin: 0; }
+        .summary-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid #f9f9f9;
+            font-size: 1.1em;
+        }
+        .summary-item:last-child { border-bottom: none; }
+        .item-info { flex: 1; }
+        .item-qty { color: #666; font-size: 0.9em; margin-left: 10px; }
+        .item-total { font-weight: bold; color: #dc3545; }
+        
+        .grand-total {
+            margin-top: 20px;
+            padding-top: 15px;
+            border-top: 2px solid #333;
+            display: flex;
+            justify-content: space-between;
+            font-size: 1.3em;
+            font-weight: bold;
+            color: #333;
+        }
+
+        /* --- 新增：成就弹窗样式 --- */
+        .achievement-modal {
+            display: none; /* 默认隐藏 */
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.6); /* 黑色半透明背景 */
+            z-index: 1000; /* 保证在最上层 */
+            justify-content: center;
+            align-items: center;
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        .achievement-content {
+            background: linear-gradient(135deg, #ffd700, #ffaa00); /* 金色渐变背景 */
+            padding: 40px;
+            border-radius: 20px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(255, 215, 0, 0.5);
+            max-width: 400px;
+            border: 4px solid #fff;
+            animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .achievement-icon { font-size: 4em; margin-bottom: 10px; display: block; }
+        .achievement-title { font-size: 2em; color: #fff; text-shadow: 1px 1px 3px rgba(0,0,0,0.3); margin: 0 0 10px 0; }
+        .achievement-desc { font-size: 1.2em; color: #fff; margin-bottom: 20px; font-weight: bold; }
+        
+        .close-btn {
+            background: #fff;
+            color: #ffaa00;
+            border: none;
+            padding: 10px 30px;
+            font-size: 1.1em;
+            border-radius: 50px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: transform 0.2s;
+        }
+        .close-btn:hover { transform: scale(1.1); }
+
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes popIn { from { transform: scale(0.5); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+
+    </style>
+</head>
+<body>
+
+    <!-- 1. 顶部金额 -->
+    <div id="budget-container">
+        <div>我是王多鱼，我有</div>
+        <div id="budget">¥30,000,000,000</div>
+    </div>
+
+    <!-- 2. 图片 -->
+    <div class="image-banner">
+        <img src="你的图片路径.jpg" alt="王多鱼">
+    </div>
+
+    <!-- 3. 商品列表 -->
+    <div class="items-grid" id="items-container"></div>
+
+    <!-- 4. 底部消费明细 -->
+    <div class="summary-board">
+        <div class="summary-title">
+            <span>💸 消费明细</span>
+            <span style="font-size: 0.6em; color: #666; font-weight: normal;">(仅显示已购物品)</span>
+        </div>
+        <ul class="summary-list" id="summary-list"></ul>
+        <div class="grand-total">
+            <span>总支出:</span>
+            <span id="total-spend">¥0</span>
+        </div>
+    </div>
+
+    <!-- 5. 成就弹窗 HTML -->
+    <div id="achievement-modal" class="achievement-modal">
+        <div class="achievement-content">
+            <span class="achievement-icon">🏆</span>
+            <h2 class="achievement-title" id="ach-title">成就达成</h2>
+            <p class="achievement-desc" id="ach-desc">描述内容</p>
+            <button class="close-btn" onclick="closeAchievement()">太棒了！</button>
+        </div>
+    </div>
+
+    <script>
+        // 初始资金
+        const INITIAL_BUDGET = 30000000000;
+        let currentBudget = INITIAL_BUDGET;
+        
+        // 成就列表配置
+        const ACHIEVEMENTS = [
+            { threshold: 100000, title: "小试牛刀", desc: "消费突破 10 万元，终于敢点海鲜了！" },
+            { threshold: 1000000, title: "西虹市首富", desc: "消费突破 100 万元，王多鱼的名字开始被人知晓。" },
+            { threshold: 10000000, title: "挥金如土", desc: "消费突破 1000 万元，这钱花得跟流水一样！" },
+            { threshold: 100000000, title: "包下整个酒店", desc: "消费突破 1 亿元，服务员见你都鞠躬！" },
+            { threshold: 1000000000, title: "投资梦想", desc: "消费突破 10 亿元，这才是真正的有钱人。" },
+            { threshold: 10000000000, title: "富可敌国", desc: "消费突破 100 亿元，你已经超越了大部分国家！" }
+        ];
+
+        // 记录已经解锁的成就，防止重复弹窗
+        let unlockedAchievements = [];
+        
+        // 商品数据
+        let items = [
+            { name: "大排档烤串", price: 5, count: 0 },
+            { name: "冰镇啤酒", price: 10, count: 0 },
+            { name: "豪华酒店套房", price: 2000, count: 0 },
+            { name: "拉菲红酒", price: 15000, count: 0 },
+            { name: "兰博基尼", price: 800000, count: 0 },
+            { name: "西虹市房产", price: 5000000, count: 0 },
+            { name: "私人游艇", price: 50000000, count: 0 },
+            { name: "巴菲特午餐", price: 30000000, count: 0 },
+            { name: "豪华游轮", price: 500000000, count: 0 },
+            { name: "收购恒太队", price: 2000000000, count: 0 }
+        ];
+
+        // 格式化金额
+        function formatMoney(amount) {
+            return '¥' + amount.toLocaleString('zh-CN');
+        }
+
+        // 播放提示音
+        function playSound() {
+            try {
+                const AudioContext = window.AudioContext || window.webkitAudioContext;
+                if (!AudioContext) return;
+                
+                const ctx = new AudioContext();
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+
+                osc.type = 'sine';
+                osc.frequency.value = 880; // A5
+                gain.gain.setValueAtTime(0.1, ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.00001, ctx.currentTime + 0.5);
+
+                osc.start();
+                osc.stop(ctx.currentTime + 0.5);
+            } catch (e) {
+                console.log("Audio play failed", e);
+            }
+        }
+
+        // 检查成就
+        function checkAchievements(currentSpend) {
+            ACHIEVEMENTS.forEach(ach => {
+                // 如果当前花费超过了成就门槛，且该成就还没解锁
+                if (currentSpend >= ach.threshold && !unlockedAchievements.includes(ach.threshold)) {
+                    showAchievement(ach);
+                    unlockedAchievements.push(ach.threshold);
+                }
+            });
+        }
+
+        // 显示成就弹窗
+        function showAchievement(ach) {
+            document.getElementById('ach-title').innerText = ach.title;
+            document.getElementById('ach-desc').innerText = ach.desc;
+            document.getElementById('achievement-modal').style.display = 'flex';
+            playSound();
+        }
+
+        // 关闭成就弹窗
+        function closeAchievement() {
+            document.getElementById('achievement-modal').style.display = 'none';
+        }
+
+        // 调整批量倍数
+        function adjustBatch(index, change) {
+            let newBatch = items[index].batch + change;
+            if (newBatch >= 1) {
+                items[index].batch = newBatch;
+                render();
+            }
+        }
+
+        // 购买
+        function buyItem(index) {
+            items[index].count += items[index].batch;
+            updateUI();
+        }
+
+        // 出售
+        function sellItem(index) {
+            let amountToSell = Math.min(items[index].batch, items[index].count);
+            if (amountToSell > 0) {
+                items[index].count -= amountToSell;
+                updateUI();
+            }
+        }
+
+        // 渲染商品列表
+        function render() {
+            const container = document.getElementById('items-container');
+            container.innerHTML = ''; 
+
+            items.forEach((item, index) => {
+                const card = document.createElement('div');
+                card.className = 'item-card';
+                card.innerHTML = `
+                    <div class="item-name">${item.name}</div>
+                    <div class="item-price">${formatMoney(item.price)}</div>
+                    <div class="item-owned">当前持有：${item.count}</div>
+                    <div class="control-group">
+                        <button class="btn btn-sell" onclick="sellItem(${index})">出售</button>
+                        <div class="batch-control">
+                            <button class="btn btn-symbol" onclick="adjustBatch(${index}, -1)">−</button>
+                            <div class="batch-display">x${item.batch}</div>
+                            <button class="btn btn-symbol" onclick="adjustBatch(${index}, 1)">+</button>
+                        </div>
+                        <button class="btn btn-buy" onclick="buyItem(${index})">购买</button>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        // 渲染底部明细
+        function renderSummary(currentSpend) {
+            const list = document.getElementById('summary-list');
+            const totalSpendEl = document.getElementById('total-spend');
+            list.innerHTML = ''; 
+
+            items.forEach(item => {
+                if (item.count > 0) {
+                    const itemTotal = item.price * item.count;
+
+                    const li = document.createElement('li');
+                    li.className = 'summary-item';
+                    li.innerHTML = `
+                        <div class="item-info">
+                            ${item.name}
+                            <span class="item-qty">x ${item.count}</span>
+                        </div>
+                        <div class="item-total">${formatMoney(itemTotal)}</div>
+                    `;
+                    list.appendChild(li);
+                }
+            });
+
+            if (currentSpend === 0) {
+                list.innerHTML = '<li style="text-align:center; color:#999; padding:20px;">多鱼，钱还没花出去呢，别心疼！</li>';
+            }
+
+            totalSpendEl.innerText = formatMoney(currentSpend);
+        }
+
+        function updateUI() {
+            // 1. 计算当前总支出
+            let currentSpend = items.reduce((sum, item) => sum + (item.price * item.count), 0);
+            
+            // 2. 更新顶部余额
+            currentBudget = INITIAL_BUDGET - currentSpend;
+            document.getElementById('budget').innerText = formatMoney(currentBudget);
+
+            // 3. 检查成就 (核心新增逻辑)
+            checkAchievements(currentSpend);
+
+            // 4. 重新渲染列表
+            render();
+
+            // 5. 重新渲染底部明细
+            renderSummary(currentSpend);
+        }
+
+        // 初始化
+        items.forEach(item => item.batch = 1);
+        render();
+        renderSummary(0);
+
+    </script>
+</body>
+</html>
